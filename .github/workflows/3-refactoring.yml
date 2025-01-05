@@ -1,0 +1,41 @@
+name: Step 3, Refactoring
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**/*.js'
+      - 'src/**/*.ts'
+      - 'src/**/*.tsx'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  verify_step:
+    name: Verify Step
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify file changes
+        run: |
+          # Check for substantial code changes
+          if ! git diff --stat HEAD~1 HEAD | awk '{files += 1} END {exit files < 1}'; then
+            echo "No significant code changes detected"
+            exit 1
+          fi
+
+      - name: Update step
+        if: success()
+        run: |
+          echo '4' > .github/steps/-step.txt
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .github/steps/-step.txt
+          git commit -m "Complete step 3"
+          git push

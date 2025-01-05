@@ -1,0 +1,41 @@
+name: Step 4, Debugging
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**/__tests__/**'
+      - 'src/**/debug/**'
+      - 'src/lib/logger.ts'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  verify_step:
+    name: Verify Step
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify file changes
+        run: |
+          # Check for debugging-related changes
+          if ! git diff --name-only HEAD~1 HEAD | grep -E '(__tests__|debug|logger)'; then
+            echo "No debugging-related changes detected"
+            exit 1
+          fi
+
+      - name: Update step
+        if: success()
+        run: |
+          echo 'X' > .github/steps/-step.txt
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .github/steps/-step.txt
+          git commit -m "Complete course"
+          git push
